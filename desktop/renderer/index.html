@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'" />
+  <title>scrcpy-desktop</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>scrcpy-desktop</h1>
+    <div class="header-actions">
+      <button id="btn-refresh" title="Re-scan connected devices">Refresh devices</button>
+      <button id="btn-stop-all" class="danger" title="Stop every running scrcpy">Stop all</button>
+      <button id="btn-settings" title="Configure scrcpy/adb paths">Settings</button>
+    </div>
+  </header>
+
+  <section id="status-bar">
+    <span id="paths-status">detecting scrcpy/adb…</span>
+  </section>
+
+  <section id="settings" class="hidden">
+    <label>
+      scrcpy path
+      <input id="input-scrcpy" type="text" placeholder="leave empty to auto-detect" />
+    </label>
+    <label>
+      adb path
+      <input id="input-adb" type="text" placeholder="leave empty to auto-detect" />
+    </label>
+    <div class="settings-actions">
+      <button id="btn-save-settings">Save</button>
+    </div>
+  </section>
+
+  <section id="devices">
+    <h2>Devices</h2>
+    <table>
+      <thead>
+        <tr><th>Serial</th><th>Model</th><th>State</th><th></th></tr>
+      </thead>
+      <tbody id="device-rows">
+        <tr><td colspan="4" class="muted">No devices. Connect a phone with USB debugging enabled, then Refresh.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="logs">
+    <h2>Output</h2>
+    <div id="log-panel" aria-live="polite"></div>
+  </section>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

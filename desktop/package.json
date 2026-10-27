@@ -1,0 +1,41 @@
+{
+  "name": "scrcpy-desktop",
+  "productName": "scrcpy-desktop",
+  "version": "5.0.1",
+  "description": "Desktop wrapper to start/stop scrcpy and watch its output",
+  "main": "main.js",
+  "author": "jalzae",
+  "license": "Apache-2.0",
+  "scripts": {
+    "start": "node scripts/dev.js",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.jalzae.scrcpy-desktop",
+    "productName": "scrcpy-desktop",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*"
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.developer-tools",
+      "identity": null
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage",
+      "category": "Utility"
+    }
+  }
+}
