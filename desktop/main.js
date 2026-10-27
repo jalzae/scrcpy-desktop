@@ -149,10 +149,27 @@ ipcMain.handle('scrcpy:start', (_e, serial) => {
   if (!scrcpy) {
     return { error: 'scrcpy not found. Install it (e.g. brew install scrcpy) or set the path in settings.' };
   }
+  const adb = resolveBinary('adb', config.adbPath);
+  if (!adb) {
+    return { error: 'adb not found. Install Android platform-tools (or set the adb path in settings).' };
+  }
+
+  // GUI apps don't inherit the shell PATH, and scrcpy itself execs `adb`
+  // (start-server, push, ...) — give the child the resolved binary via the ADB
+  // env var plus a PATH that includes both tool directories.
+  const childEnv = {
+    ...process.env,
+    ADB: adb,
+    PATH: [
+      path.dirname(scrcpy),
+      path.dirname(adb),
+      process.env.PATH || '',
+    ].join(path.delimiter),
+  };
 
   let proc;
   try {
-    proc = spawn(scrcpy, ['-s', serial], { windowsHide: true });
+    proc = spawn(scrcpy, ['-s', serial], { windowsHide: true, env: childEnv });
   } catch (err) {
     return { error: `failed to launch scrcpy: ${err.message}` };
   }
