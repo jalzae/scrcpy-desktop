@@ -1,7 +1,12 @@
 # scrcpy-desktop
 
 Minimal desktop wrapper around the `scrcpy` CLI. Start/stop mirroring per connected
-device and watch scrcpy's output (errors included) in the app.
+device, install app packages, and watch scrcpy's output (errors included) in the app.
+
+**Install**: pick a file with the per-device `Install…` button — `.apk` installs via
+`adb install -r -t`, split bundles (`.xapk`/`.apks`/`.apkm`) are extracted and installed
+with `adb install-multiple`; any other file is handed to adb as-is so it can report the
+problem.
 
 Uses the `scrcpy` and `adb` binaries already installed on your system — it does not
 bundle or build them. Paths are auto-detected (homebrew, Android SDK, PATH); override

@@ -10,6 +10,9 @@ const inputAdb = document.getElementById('input-adb');
 /** serial -> true while scrcpy runs for that device */
 const runningSerials = new Set();
 
+/** serial -> true while an adb install runs for that device */
+const installingSerials = new Set();
+
 // ---------------------------------------------------------------------------
 // Devices
 // ---------------------------------------------------------------------------
@@ -55,6 +58,12 @@ function renderDevices(devices) {
     tdState.className = isRunning ? 'state-running' : `state-${device.state}`;
 
     const tdAction = document.createElement('td');
+    const btnInstall = document.createElement('button');
+    btnInstall.textContent = 'Install…';
+    btnInstall.title = `Install an app package on ${device.model}`;
+    btnInstall.disabled = !usable || installingSerials.has(device.serial);
+    btnInstall.addEventListener('click', () => installApp(device.serial));
+
     const btn = document.createElement('button');
     if (isRunning) {
       btn.textContent = 'Stop';
@@ -65,7 +74,7 @@ function renderDevices(devices) {
       btn.disabled = !usable;
       btn.addEventListener('click', () => startDevice(device.serial));
     }
-    tdAction.appendChild(btn);
+    tdAction.append(btnInstall, btn);
 
     tr.append(tdSerial, tdModel, tdState, tdAction);
     deviceRows.appendChild(tr);
@@ -82,6 +91,37 @@ async function startDevice(serial) {
   appendLog('main', `[scrcpy-desktop] started scrcpy for ${serial} (pid ${res.pid})\n`);
   refreshDevices();
 }
+
+// ---------------------------------------------------------------------------
+// App install
+// ---------------------------------------------------------------------------
+
+async function installApp(serial) {
+  const picked = await api.selectInstallFile();
+  if (!picked || picked.canceled || !picked.filePath) return;
+
+  installingSerials.add(serial);
+  appendLog(serial, `installing ${picked.filePath} …\n`);
+  refreshDevices();
+
+  const res = await api.installApp(serial, picked.filePath);
+  if (res.error) {
+    installingSerials.delete(serial);
+    appendLog(serial, `${res.error}\n`, 'err');
+    refreshDevices();
+  }
+}
+
+api.onInstallProgress(({ serial, stream, text }) => {
+  // adb prints install progress/Success on stdout, failures on stderr
+  appendLog(serial, text, stream === 'stderr' ? 'err' : 'info');
+});
+
+api.onInstallDone(({ serial, ok, code }) => {
+  installingSerials.delete(serial);
+  appendLog(serial, ok ? 'install succeeded\n' : `install failed (exit ${code})\n`, ok ? 'info' : 'err');
+  refreshDevices();
+});
 
 // ---------------------------------------------------------------------------
 // Logs
